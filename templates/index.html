@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Share-X-Pr0 - Simple Local File Sharing">
+    <title>Share-X-Pr0</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                        <polyline points="16 6 12 2 8 6" />
+                        <line x1="12" y1="2" x2="12" y2="15" />
+                    </svg>
+                </div>
+                <h1>Share-X-Pr0</h1>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="info-item">
+                    <span class="label">Network</span>
+                    <span class="value" id="networkAddress">Loading...</span>
+                </div>
+
+                <div class="info-item qr-item" style="align-items: center; justify-content: center; overflow: hidden;">
+                    <img id="qrCode" alt="Scan to Connect"
+                        style="width: 100%; max-width: 140px; border-radius: 8px; display: none;">
+                    <p id="qrLabel"
+                        style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.5rem; display: none;">Scan
+                        to Connect</p>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button id="themeToggle" class="icon-btn" aria-label="Toggle Theme">
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </svg>
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="mobile-header">
+                <div class="brand">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                        <polyline points="16 6 12 2 8 6" />
+                        <line x1="12" y1="2" x2="12" y2="15" />
+                    </svg>
+                    <h1>Share-X-Pr0</h1>
+                </div>
+                <button id="mobileMenuBtn" class="icon-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                </button>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Upload Area -->
+                <section class="upload-area" id="dropZone">
+                    <input type="file" id="fileInput" multiple hidden>
+                    <div class="upload-content">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                        </div>
+                        <h3>Upload Files</h3>
+                        <p>Drag and drop or <button id="filePickerBtn" class="link-btn">browse</button></p>
+                    </div>
+
+                    <!-- Progress -->
+                    <div id="uploadProgress" class="progress-container" style="display: none;">
+                        <div class="progress-header">
+                            <span id="uploadFileName">Uploading...</span>
+                            <span id="uploadPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- File List -->
+                <section class="files-area">
+                    <div class="section-header">
+                        <h2>Files <span id="fileCount" class="badge">0</span></h2>
+                    </div>
+                    <div id="filesList" class="file-grid">
+                        <div class="loading">Loading files...</div>
+                    </div>
+                </section>
+            </div>
+
+            <footer class="app-footer">
+                <p>Share-X-Pr0 &copy; 2026. Secure Local Sharing.</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Drag Overlay -->
+    <div id="dragOverlay" class="drag-overlay">
+        <div class="overlay-content">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <h3>Drop to Upload</h3>
+        </div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Delete Modal -->
+    <dialog id="confirmModal" class="modal">
+        <h3>Delete File</h3>
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="modal-actions">
+            <button id="cancelDelete" class="btn btn-ghost">Cancel</button>
+            <button id="confirmDelete" class="btn btn-danger">Delete</button>
+        </div>
+    </dialog>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>

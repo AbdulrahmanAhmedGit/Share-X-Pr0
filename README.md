@@ -1,170 +1,75 @@
-# Share-X-Pr0 - Local Network File Sharing
+# Share-X-Pr0 - Premium Local File Sharing
 
-A clean, modern, and responsive web UI for local network file sharing built with Flask.
+A stunning, modern, and high-performance web application for secure local network file sharing. Built with **Flask** and **Vanilla JS**, featuring a premium glassmorphism design, real-time updates, and instant mobile connectivity.
 
-## 🚀 Features
+![Share-X-Pr0 Banner](https://via.placeholder.com/800x400.png?text=Share-X-Pr0+Premium+UI)
 
-- **Drag & Drop Upload** - Intuitive file upload interface
-- **Real-time Progress** - Visual upload progress tracking
-- **File Management** - Browse and download shared files
-- **Dark/Light Theme** - Toggle between themes with preference persistence
-- **Optional QR Code** - Button-triggered QR code for mobile access
-- **Smart Error Handling** - Toast notifications for all error states
-- **Upload State Management** - UI disabled during uploads to prevent issues
-- **Privacy-Focused** - Local network only, no tracking
-- **Responsive Design** - Works seamlessly on all devices
+## 🚀 Key Features
+
+*   **🎨 Premium Glassmorphism UI**: A beautiful, modern interface with frosted glass effects, mesh gradients, and smooth micro-interactions.
+*   **🌓 Dynamic Themes**: Seamlessly switch between Light and Dark modes with persistent preferences.
+*   **📱 Fully Responsive**: A professionally designed layout that adapts perfectly from large desktops to mobile phones.
+*   **⚡ Instant Mobile Connect**: Automatically generates a theme-aware **QR Code** for one-scan connection from any mobile device on the network.
+*   **📂 Drag & Drop Uploads**: Intuitive drop zone with visual feedback and real-time progress bars.
+*   **🔄 Real-Time Sync**: The file list automatically updates across all connected devices when files are added or removed.
+*   **� Secure & Private**: Works entirely on your local network/WiFi. No data leaves your permises.
+*   **✨ Smart Experience**: Includes toast notifications for status updates (success, error, info) and a polished "empty state" for new sessions.
+
+## 🛠️ Technology Stack
+
+*   **Backend**: Python (Flask)
+*   **Frontend**: HTML5, CSS3 (Variables, Flexbox/Grid, Animations), Vanilla JavaScript
+*   **Styling**: Custom CSS with Glassmorphism & Mesh Gradients (No heavy frameworks like Bootstrap or Tailwind)
+*   **Icons**: Hand-picked SVG Icons for file types and UI elements.
+
+## 📦 Installation & Setup
+
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/yourusername/Share-X-Pr0.git
+    cd Share-X-Pr0
+    ```
+
+2.  **Install Dependencies**
+    Ensure you have Python installed, then run:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **Run the Application**
+    ```bash
+    python main.py
+    ```
+
+4.  **Access the App**
+    *   Open your browser and go to `http://localhost:5000`
+    *   **On Mobile**: Scan the QR code displayed in the sidebar to connect instantly.
 
 ## 📁 Project Structure
 
 ```
 Share-X-Pr0/
-├── main.py              # Flask backend (implement endpoints)
+├── main.py              # Flask server & logic
+├── requirements.txt     # Python dependencies
 ├── templates/
-│   └── index.html      # Main UI
+│   └── index.html      # Main HTML structure
 ├── static/
-│   ├── styles.css      # Styling with themes
-│   └── main.js         # Frontend functionality
-└── README.md
+│   ├── styles.css      # Premium styling & themes
+│   └── main.js         # Client-side logic & interactions
+├── upload/              # Storage for shared files
+└── metadata.json        # Simple file metadata storage
 ```
 
-## 🔧 Required Flask Endpoints
+## 🔒 Security & Privacy
 
-The frontend expects these endpoints in your `main.py`:
+*   **Local Network Only**: Designed to be used within a trusted local network (Home/Office WiFi).
+*   **No Cloud Storage**: All files are stored directly on the host machine.
+*   **No Tracking**: Zero analytics or external trackers.
 
-### 1. Main Route
-```python
-@app.route('/')
-def index():
-    return render_template('index.html')
-```
+## 🤝 Contributing
 
-### 2. Device Info (NEW - Required)
-```python
-@app.route('/device-info', methods=['GET'])
-def device_info():
-    """Return server's local IP address and port"""
-    import socket
-    
-    # Get local IP
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(('8.8.8.8', 80))
-        local_ip = s.getsockname()[0]
-    except Exception:
-        local_ip = '127.0.0.1'
-    finally:
-        s.close()
-    
-    return jsonify({
-        'ip': local_ip,
-        'port': 5000  # your configured port
-    })
-```
-
-### 3. Upload Endpoint
-```python
-@app.route('/upload', methods=['POST'])
-def upload():
-    # Handle file upload from request.files['file']
-    # Save file and return success response
-    return jsonify({'success': True})
-```
-
-### 4. List Files
-```python
-@app.route('/files', methods=['GET'])
-def get_files():
-    # Return list of available files
-    return jsonify([
-        {
-            'id': 'unique_file_id',
-            'name': 'filename.pdf',
-            'size': 12345  # in bytes
-        }
-    ])
-```
-
-### 4. Download Endpoint
-```python
-@app.route('/download/<file_id>')
-def download(file_id):
-    # Send file for download
-    return send_file(file_path, as_attachment=True)
-```
-
-## 🎨 Customization
-
-### Colors
-Edit CSS variables in `static/styles.css`:
-```css
-:root {
-    --accent-primary: #6366f1;
-    --accent-secondary: #8b5cf6;
-    /* ... more variables */
-}
-```
-
-### File Icons
-Modify the `getFileIcon()` function in `static/main.js`:
-```javascript
-const iconMap = {
-    'pdf': '📄',
-    'jpg': '🖼️',
-    // Add more file types
-};
-```
-
-## 📱 Mobile Access
-
-1. Run the app on your local network
-2. Scan the QR code with your mobile device
-3. Access the same interface on mobile
-
-## 🌐 Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-## ⚙️ Technical Stack
-
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **Backend**: Flask
-- **Features**: No external dependencies, fully self-contained
-
-## 🔒 Security Notes
-
-- Designed for local network use only
-- No authentication by design
-- All code runs locally (no CDNs)
-- Privacy-focused implementation
-
-## 📝 Integration Steps
-
-1. Implement the 4 required Flask endpoints in `main.py`
-2. Configure Flask static/template folders (already done)
-3. Run your Flask application
-4. Access via browser at `http://localhost:5000`
-5. Share IP address with local network users
-
-## 🎯 Quick Start
-
-```bash
-# Run your Flask application
-python main.py
-
-# Access in browser
-http://localhost:5000
-```
-
-## ✨ UI Features
-
-- **Theme Toggle**: Click sun/moon icon in top-right corner
-- **Upload**: Drag files or click "Choose Files"
-- **Download**: Click download button on any file card
-- **QR Code**: Automatically generated for current URL
+Contributions are welcome! Feel free to submit a Pull Request.
 
 ---
 
-**Built for Share-X-Pr0** | Privacy-Focused | Local Network Only
+**Share-X-Pr0** © 2026. Simple. Fast. Secure.
