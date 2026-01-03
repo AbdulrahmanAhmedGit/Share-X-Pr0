@@ -2,7 +2,7 @@
 
 A stunning, modern, and high-performance web application for secure local network file sharing. Built with **Flask** and **Vanilla JS**, featuring a premium glassmorphism design, real-time updates, and instant mobile connectivity.
 
-![Share-X-Pr0 Banner](https://via.placeholder.com/800x400.png?text=Share-X-Pr0+Premium+UI)
+![Share-X-Pr0 Banner](https://i.ibb.co/xK62VMyH/Gemini-Generated-Image-spupzjspupzjspup.png)
 
 ## 🚀 Key Features
 
