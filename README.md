@@ -12,7 +12,7 @@ A stunning, modern, and high-performance web application for secure local networ
 *   **⚡ Instant Mobile Connect**: Automatically generates a theme-aware **QR Code** for one-scan connection from any mobile device on the network.
 *   **📂 Drag & Drop Uploads**: Intuitive drop zone with visual feedback and real-time progress bars.
 *   **🔄 Real-Time Sync**: The file list automatically updates across all connected devices when files are added or removed.
-*   **� Secure & Private**: Works entirely on your local network/WiFi. No data leaves your permises.
+*   **🔒 Secure & Private**: Works entirely on your local network/WiFi. No data leaves your permises.
 *   **✨ Smart Experience**: Includes toast notifications for status updates (success, error, info) and a polished "empty state" for new sessions.
 
 ## 🛠️ Technology Stack
