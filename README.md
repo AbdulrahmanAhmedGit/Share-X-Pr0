@@ -10,23 +10,25 @@ A stunning, modern, and high-performance web application for secure local networ
 *   **🌓 Dynamic Themes**: Seamlessly switch between Light and Dark modes with persistent preferences.
 *   **📱 Fully Responsive**: A professionally designed layout that adapts perfectly from large desktops to mobile phones.
 *   **⚡ Instant Mobile Connect**: Automatically generates a theme-aware **QR Code** for one-scan connection from any mobile device on the network.
-*   **📂 Drag & Drop Uploads**: Intuitive drop zone with visual feedback and real-time progress bars.
-*   **🔄 Real-Time Sync**: The file list automatically updates across all connected devices when files are added or removed.
-*   **🔒 Secure & Private**: Works entirely on your local network/WiFi. No data leaves your permises.
+*   **📂 Drag & Drop Uploads**: Intuitive drop zone with visual feedback and real-time progress bars. Supports **unlimited file sizes**.
+*   **🔄 Real-Time Sync**: The file list automatically updates across all connected devices when files are added or removed using efficient polling.
+*   **👁️ Smart Previews**: Built-in preview support for Images, Videos, Audio, PDFs, and Code/Text files directly in the browser.
+*   **🔒 Secure & Private**: File transfers happen strictly within your local network (LAN). Files are stored locally on your machine.
 *   **✨ Smart Experience**: Includes toast notifications for status updates (success, error, info) and a polished "empty state" for new sessions.
 
 ## 🛠️ Technology Stack
 
 *   **Backend**: Python (Flask)
 *   **Frontend**: HTML5, CSS3 (Variables, Flexbox/Grid, Animations), Vanilla JavaScript
-*   **Styling**: Custom CSS with Glassmorphism & Mesh Gradients (No heavy frameworks like Bootstrap or Tailwind)
+*   **Storage**: Lightweight JSON-based metadata storage (No complex database setup required).
+*   **Styling**: Custom CSS with Glassmorphism & Mesh Gradients (No heavy frameworks like Bootstrap or Tailwind).
 *   **Icons**: Hand-picked SVG Icons for file types and UI elements.
 
 ## 📦 Installation & Setup
 
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/yourusername/Share-X-Pr0.git
+    git clone https://github.com/AbdulrahmanAhmedGit/Share-X-Pr0.git
     cd Share-X-Pr0
     ```
 
@@ -42,33 +44,35 @@ A stunning, modern, and high-performance web application for secure local networ
     ```
 
 4.  **Access the App**
-    *   Open your browser and go to `http://localhost:5000`
-    *   **On Mobile**: Scan the QR code displayed in the sidebar to connect instantly.
+    *   **Desktop**: Open your browser and go to `http://localhost:5000`
+    *   **Mobile**: Scan the QR code displayed in the sidebar to connect instantly.
+
+    *Note: Ensure your devices are connected to the same Wi-Fi/Network.*
 
 ## 📁 Project Structure
 
 ```
 Share-X-Pr0/
-├── main.py              # Flask server & logic
+├── main.py              # Flask server, routes & logic
 ├── requirements.txt     # Python dependencies
+├── metadata.json        # File metadata (auto-generated)
+├── upload/              # Physical storage for uploaded files
 ├── templates/
-│   └── index.html      # Main HTML structure
-├── static/
-│   ├── styles.css      # Premium styling & themes
-│   └── main.js         # Client-side logic & interactions
-├── upload/              # Storage for shared files
-└── metadata.json        # Simple file metadata storage
+│   └── index.html      # Main application interface
+└── static/
+    ├── styles.css      # Premium styling, variables & themes
+    └── main.js         # Frontend logic (Drag&Drop, Polling, UI)
 ```
 
 ## 🔒 Security & Privacy
 
 *   **Local Network Only**: Designed to be used within a trusted local network (Home/Office WiFi).
-*   **No Cloud Storage**: All files are stored directly on the host machine.
-*   **No Tracking**: Zero analytics or external trackers.
+*   **Self-Hosted**: All files are stored directly on the host machine in the `upload/` folder.
+*   **Zero Analytics**: No user tracking or external telemetry.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to submit a Pull Request.
+Contributions are welcome! Feel free to submit a Pull Request or open an issue.
 
 ---
 

@@ -3,6 +3,7 @@ let currentTheme = localStorage.getItem('theme') || 'light';
 let isUploading = false;
 let deviceInfo = null;
 let fileListPollingInterval = null; // Polling interval for automatic file list updates
+const displayedFiles = new Map(); // Track currently displayed files by ID
 
 // ==================== DOM ELEMENTS ====================
 const dropZone = document.getElementById('dropZone');
@@ -24,6 +25,12 @@ const confirmModal = document.getElementById('confirmModal');
 const confirmMessage = document.getElementById('confirmMessage');
 const cancelDeleteBtn = document.getElementById('cancelDelete');
 const confirmDeleteBtn = document.getElementById('confirmDelete');
+const previewModal = document.getElementById('previewModal');
+const previewTitle = document.getElementById('previewTitle');
+const previewContent = document.getElementById('previewContent');
+const closePreviewBtn = document.getElementById('closePreview');
+const downloadPreviewBtn = document.getElementById('downloadPreviewBtn');
+const copyPreviewBtn = document.getElementById('copyPreviewBtn');
 
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchDeviceInfo();
     initQRButton();
     initMobileMenu();
+    initPreviewModal();
     startFileListPolling(); // Start automatic file list updates
 });
 
@@ -292,13 +300,14 @@ async function loadFiles() {
     } catch (error) {
         console.error('Error loading files:', error);
         // Silently handle errors during polling to avoid spamming alerts
-        // Only show error state if the file list is currently empty
-        if (!filesList.innerHTML || filesList.innerHTML.includes('loading-spinner')) {
+        // Only show error state if the file list is currently empty or in loading state
+        if (!filesList.innerHTML || filesList.querySelector('.loading') || filesList.innerHTML.includes('loading-spinner')) {
             filesList.innerHTML = `
                 <div class="empty-state">
                     <p>Unable to load files. Please make sure the server is running.</p>
                 </div>
             `;
+            displayedFiles.clear();
         }
     }
 }
@@ -309,8 +318,15 @@ function displayFiles(files) {
         fileCount.textContent = files ? files.length : 0;
     }
 
+    // Handle empty list
     if (!files || files.length === 0) {
-        filesList.innerHTML = `
+        if (displayedFiles.size > 0) {
+            filesList.innerHTML = '';
+            displayedFiles.clear();
+        }
+
+        if (!filesList.querySelector('.empty-state')) {
+            filesList.innerHTML = `
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.3;">
                     <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
@@ -318,15 +334,34 @@ function displayFiles(files) {
                 </svg>
                 <p>No files shared yet.</p>
             </div>
-        `;
+            `;
+        }
         return;
     }
 
-    filesList.innerHTML = '';
+    // Clear loading or empty state if present
+    if (filesList.querySelector('.empty-state') || filesList.querySelector('.loading')) {
+        filesList.innerHTML = '';
+        displayedFiles.clear();
+    }
 
+    const incomingIds = new Set(files.map(f => f.id));
+
+    // Remove deleted files
+    for (const [id, element] of displayedFiles) {
+        if (!incomingIds.has(id)) {
+            element.remove();
+            displayedFiles.delete(id);
+        }
+    }
+
+    // Add new files
     files.forEach(file => {
-        const fileCard = createFileCard(file);
-        filesList.appendChild(fileCard);
+        if (!displayedFiles.has(file.id)) {
+            const fileCard = createFileCard(file);
+            filesList.appendChild(fileCard);
+            displayedFiles.set(file.id, fileCard);
+        }
     });
 }
 
@@ -349,22 +384,26 @@ function createFileCard(file) {
             </div>
         </div>
         <div class="file-actions">
-            <button class="download-btn" onclick="downloadFile('${file.id}', '${file.name}')">
+            <button class="icon-btn" onclick="openPreview('${file.id}', '${file.name}')" title="Preview">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </button>
+            <button class="download-btn" onclick="downloadFile('${file.id}', '${file.name}')" title="Download">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
-                Download
             </button>
-            <button class="delete-btn" onclick="deleteFile('${file.id}', '${file.name}')">
+            <button class="delete-btn icon-btn" onclick="deleteFile('${file.id}', '${file.name}')" title="Delete">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     <line x1="10" y1="11" x2="10" y2="17"></line>
                     <line x1="14" y1="11" x2="14" y2="17"></line>
                 </svg>
-                Delete
             </button>
         </div>
     `;
@@ -530,6 +569,145 @@ function showDeleteConfirmation(fileName) {
     });
 }
 
+// ==================== PREVIEW MODAL LOGIC ====================
+function initPreviewModal() {
+    closePreviewBtn.addEventListener('click', () => {
+        previewModal.close();
+    });
+
+    // Close on backdrop click
+    previewModal.addEventListener('click', (e) => {
+        if (e.target === previewModal) {
+            previewModal.close();
+        }
+    });
+
+    // Copy button logic
+    if (copyPreviewBtn) {
+        copyPreviewBtn.addEventListener('click', () => {
+            const codeBlock = previewContent.querySelector('code');
+            if (codeBlock) {
+                navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+                    const originalText = copyPreviewBtn.textContent;
+                    copyPreviewBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyPreviewBtn.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    showToast('Failed to copy text', 'error');
+                });
+            }
+        });
+    }
+}
+
+function openPreview(fileId, fileName) {
+    const ext = getFileExtension(fileName);
+    const mimeType = getMimeType(ext);
+    const url = `/preview/${fileId}`;
+
+    previewTitle.textContent = fileName;
+    downloadPreviewBtn.onclick = () => downloadFile(fileId, fileName);
+
+    // Reset state
+    previewContent.innerHTML = '<div class="loading">Loading preview...</div>';
+    if (copyPreviewBtn) copyPreviewBtn.style.display = 'none';
+
+    previewModal.showModal();
+
+    if (imageExtensions.includes(ext)) {
+        const img = new Image();
+        img.onload = () => {
+            previewContent.innerHTML = '';
+            img.className = 'preview-media';
+            img.alt = fileName;
+            previewContent.appendChild(img);
+        };
+        img.onerror = () => {
+            showPreviewError();
+        };
+        img.src = url;
+    } else if (videoExtensions.includes(ext)) {
+        previewContent.innerHTML = `
+            <video controls class="preview-media" autoplay>
+                <source src="${url}" type="${mimeType}">
+                Your browser does not support the video tag.
+            </video>`;
+    } else if (audioExtensions.includes(ext)) {
+        previewContent.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 100%;">
+                <div class="file-icon" style="font-size: 4rem;">
+                    ${getFileIcon(ext)}
+                </div>
+                <audio controls class="preview-media" style="width: 100%; max-width: 400px;" autoplay>
+                    <source src="${url}" type="${mimeType}">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>`;
+    } else if (ext === 'pdf') {
+        previewContent.innerHTML = `<iframe src="${url}" class="preview-frame"></iframe>`;
+    } else if (textExtensions.includes(ext) || codeExtensions.includes(ext)) {
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error('Network response was not ok');
+                return res.text();
+            })
+            .then(text => {
+                // Escape HTML to prevent XSS
+                const escaped = text
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+                previewContent.innerHTML = `<pre class="preview-text"><code>${escaped}</code></pre>`;
+                if (copyPreviewBtn) copyPreviewBtn.style.display = 'inline-flex';
+            })
+            .catch(err => {
+                showPreviewError();
+            });
+    } else {
+        previewContent.innerHTML = `
+            <div style="text-align: center; color: var(--text-secondary);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.5;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+                <p>Preview not available for this file type.</p>
+                <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-tertiary);">Download the file to view it.</p>
+            </div>`;
+    }
+}
+
+function showPreviewError() {
+    previewContent.innerHTML = `
+        <div class="error-message">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p>Failed to load preview.</p>
+        </div>`;
+}
+
+// Helper arrays
+const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'];
+const videoExtensions = ['mp4', 'webm', 'ogg', 'mov'];
+const audioExtensions = ['mp3', 'wav', 'ogg', 'm4a'];
+const textExtensions = ['txt', 'md', 'csv', 'json', 'xml', 'log', 'ini', 'conf'];
+const codeExtensions = ['js', 'css', 'html', 'py', 'java', 'c', 'cpp', 'h', 'go', 'rs', 'ts', 'jsx', 'tsx', 'sql', 'sh', 'bat'];
+
+function getMimeType(ext) {
+    // Basic mapping, browser usually handles it but good for video/audio tags
+    const map = {
+        'mp4': 'video/mp4', 'webm': 'video/webm', 'ogg': 'video/ogg', 'mov': 'video/quicktime',
+        'mp3': 'audio/mpeg', 'wav': 'audio/wav', 'm4a': 'audio/mp4'
+    };
+    return map[ext] || '';
+}
+
 // ==================== TOAST NOTIFICATIONS ====================
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
@@ -559,6 +737,7 @@ function showToast(message, type = 'info') {
 // Make functions available globally
 window.downloadFile = downloadFile;
 window.deleteFile = deleteFile;
+window.openPreview = openPreview;
 
 // ==================== QR CODE LOGIC ====================
 function initQRButton() {

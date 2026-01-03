@@ -14,7 +14,7 @@ import json
 UPLOAD_FOLDER= 'upload'
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
+app.config["MAX_CONTENT_LENGTH"] = None # Remove any size limit
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 Session(app)
@@ -117,6 +117,19 @@ def download(file_id):
     return send_file(
         file_path,
         as_attachment=True,
+        download_name=metadata[file_id]["name"]
+    )
+
+@app.route('/preview/<file_id>', methods=['GET'])
+def preview(file_id):
+    if file_id not in metadata:
+        return "File not found", 404
+    
+    file_path = os.path.join(UPLOAD_FOLDER, file_id)
+
+    return send_file(
+        file_path,
+        as_attachment=False,
         download_name=metadata[file_id]["name"]
     )
 
