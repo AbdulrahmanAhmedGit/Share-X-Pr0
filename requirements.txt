@@ -4,3 +4,4 @@ werkzeug
 flask-wtf
 python-dotenv
 requests
+psycopg2-binary
