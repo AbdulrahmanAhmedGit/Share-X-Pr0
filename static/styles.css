@@ -24,6 +24,11 @@
     --status-error: #ef4444;
     --status-warning: #f59e0b;
 
+    /* Gradient Colors */
+    --grad-1: rgba(99, 102, 241, 0.15);
+    --grad-2: rgba(16, 185, 129, 0.1);
+    --grad-3: rgba(239, 68, 68, 0.1);
+
     /* Borders & Dividers */
     --border-color: rgba(229, 231, 235, 0.6);
 
@@ -58,6 +63,11 @@
     --brand-light: rgba(129, 140, 248, 0.15);
     --brand-glow: 0 0 20px rgba(129, 140, 248, 0.2);
 
+    /* Gradient Colors Dark */
+    --grad-1: rgba(129, 140, 248, 0.2);
+    --grad-2: rgba(52, 211, 153, 0.15);
+    --grad-3: rgba(248, 113, 113, 0.15);
+
     --border-color: rgba(51, 65, 85, 0.6);
 
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
@@ -91,12 +101,12 @@ body::before {
     width: 200%;
     height: 200%;
     background:
-        radial-gradient(circle at 50% 50%, var(--brand-light) 0%, transparent 50%),
-        radial-gradient(circle at 10% 10%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
-        radial-gradient(circle at 90% 90%, rgba(239, 68, 68, 0.05) 0%, transparent 40%);
+        radial-gradient(circle at 50% 50%, var(--grad-1) 0%, transparent 50%),
+        radial-gradient(circle at 10% 10%, var(--grad-2) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, var(--grad-3) 0%, transparent 40%);
     z-index: -1;
     animation: moveBackground 20s ease infinite;
-    opacity: 0.8;
+    opacity: 1;
 }
 
 @keyframes moveBackground {
@@ -750,6 +760,35 @@ button {
 
 [data-theme="dark"] .moon {
     display: block;
+}
+
+/* Floating Theme Toggle */
+.floating-theme-toggle {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: var(--bg-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    color: var(--text-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+}
+
+.floating-theme-toggle:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: var(--shadow-md);
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
 }
 
 /* Empty State */

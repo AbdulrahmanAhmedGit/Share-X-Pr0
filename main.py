@@ -10,6 +10,7 @@ import requests
 import csv
 import io
 import json
+import sqlite3
 
 UPLOAD_FOLDER= 'upload'
 app = Flask(__name__)
@@ -28,8 +29,10 @@ if os.path.exists(METADATA_FILE):
 else:
     metadata = {}
 
-
-
+def get_db_connection():
+    conn = sqlite3.connect("share_x.db")
+    conn.row_factory = sqlite3.Row
+    return conn
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -40,8 +43,14 @@ app.config.update(
 )
 
 
-@app.route("/upload", methods=["POST"])
-def upload_file():
+@app.route("/upload/<code>", methods=["POST"])
+def upload_file(code):
+    conn = get_db_connection()
+    db = conn.cursor()
+    db.execute("SELECT * FROM codes WHERE code = ?", (code,))
+    code_record = db.fetchone()
+    if not code_record:
+        return jsonify({"success": False, "error": "Code is invalid"}), 404
     if "file" not in request.files:
         return jsonify({"success": False, "error": "No file provided"}), 400
     
@@ -59,7 +68,8 @@ def upload_file():
     metadata[file_id] = {
     "name": original_name,
     "size": file_size,
-    "uploaded_at": "2025-12-28 22:00"}
+    "uploaded_at": "2025-12-28 22:00",
+    "usr_code": code}
 
     with open(METADATA_FILE, "w") as f:
         json.dump(metadata, f)
@@ -70,22 +80,39 @@ def upload_file():
         "filename": original_name
     })
 
-@app.route('/files', methods=['GET'])
-def show_files():
+@app.route('/files/<code>', methods=['GET'])
+def show_files(code):
     files_list=[]
+    conn = get_db_connection()
+    db = conn.cursor()
+    if not session.get('verified_code'):
+        db.execute("SELECT * FROM codes WHERE code = ?", (code,))
+        code_record = db.fetchone()
+        if not code_record:
+            session['verified_code'] = False
+            return jsonify({"success": False, "error": "Code is invalid"}), 404
+        session['verified_code'] = True
     for file_id, info in metadata.items():
-        files_list.append({
-            "id": file_id,
-            "name": info["name"],
-            "size": info["size"],
-            "uploaded_at": info["uploaded_at"]
-        })
+        if info.get("usr_code") == code:
+            files_list.append({
+                "id": file_id,
+                "name": info["name"],
+                "size": info["size"],
+                "uploaded_at": info["uploaded_at"],
+                "usr_code": code
+            })
     return jsonify(files_list)
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
+@app.route('/main/<code>', methods=['GET', 'POST'])
+def index(code):
     if request.method == 'GET':
-        return render_template('index.html')
+        conn = get_db_connection()
+        db = conn.cursor()
+        db.execute("SELECT * FROM codes WHERE code = ?", (code,))
+        code_record = db.fetchone()
+        if not code_record:
+            return redirect(url_for('enter_co', error='invalid_code'))
+        return render_template('index.html', code=code_record)
     else:
         return """<script>alert("You Can't Post This Page")</script>"""
 
@@ -133,11 +160,16 @@ def preview(file_id):
         download_name=metadata[file_id]["name"]
     )
 
-@app.route("/delete", methods=["POST"])
-def delete():
-    data = request.json
+@app.route("/delete/<code>", methods=["POST"])
+def delete(code):
+    data = request.get_json()
     file_id = data.get('file_id')
-
+    conn = get_db_connection()
+    db = conn.cursor()
+    db.execute("SELECT * FROM codes WHERE code = ?", (code,))
+    code_record = db.fetchone()
+    if not code_record:
+        return jsonify({"success": False, "error": "Code is invalid"}), 404
     if file_id not in metadata:
         return jsonify({"success": False, "error": "File not found"}), 404
 
@@ -155,6 +187,39 @@ def delete():
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
+
+@app.route('/join', methods=['GET', 'POST'])
+def enter_co():
+    conn = get_db_connection()
+    db = conn.cursor()
+    if request.method == 'GET':
+        return render_template('enter_code.html')
+    data = request.get_json()
+    code = data.get('code')
+
+    if not code:
+        return jsonify({"success": False, "error": "Code is required"}), 400
+    db.execute("SELECT * FROM codes WHERE code = ?", (code,))
+    code_record = db.fetchone()
+    if not code_record:
+        return jsonify({"success": False, "error": "Code is invalid"}), 404
+    return jsonify({"success": True, "code": code_record["code"]})
+    
+    
+@app.route('/create', methods=['GET'])
+def create_co():
+    conn = get_db_connection()
+    db = conn.cursor()
+    
+    code = uuid.uuid4().hex
+    db.execute("INSERT INTO codes (code) VALUES (?)", (code,))
+    conn.commit()
+    return render_template('create_code.html', code=code)
+
+
+@app.route('/')
+def home():
+    return render_template('home.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share-X-Pr0 - Join Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--bg-app);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            position: relative;
+            overflow-x: hidden;
+            z-index: 1;
+        }
+
+        .container {
+            background: var(--bg-surface);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: var(--brand-primary);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--brand-primary);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--brand-primary);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--brand-primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: block;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-primary);
+        }
+
+        .error-msg {
+            color: var(--status-error, #ef4444);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        #reader {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-app);
+            padding: 10px;
+        }
+
+        .btn-scan {
+            background-color: var(--bg-app);
+            color: var(--text-primary);
+            border: 2px dashed var(--brand-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-scan:hover {
+            background-color: var(--brand-light);
+            color: var(--brand-primary);
+        }
+
+        /* html5-qrcode overrides inside reader */
+        #reader button {
+            background: var(--brand-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            margin: 5px;
+        }
+
+        #reader a {
+            color: var(--brand-primary);
+        }
+
+        #reader select {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            margin: 5px;
+            max-width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="themeToggle" class="floating-theme-toggle" aria-label="Toggle Theme">
+        <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+    </button>
+    <div class="container">
+        <h1>Join Room</h1>
+
+        <button id="startScanBtn" class="btn btn-scan">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <path d="M7 3v4a1 1 0 0 0 1 1h4"></path>
+                <path d="M17 3v4a1 1 0 0 1-1 1h-4"></path>
+                <path d="M17 21v-4a1 1 0 0 0-1-1h-4"></path>
+                <path d="M7 21v-4a1 1 0 0 1 1-1h4"></path>
+                <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+            Scan QR Code
+        </button>
+
+        <div id="reader"></div>
+
+        <div class="form-group">
+            <input type="text" id="roomCode" placeholder="Enter Room Code" autocomplete="off" />
+            <div id="errorMsg" class="error-msg"></div>
+        </div>
+        <button id="joinBtn" class="btn btn-primary">Join Room</button>
+        <a href="/" class="btn btn-ghost">Back to Home</a>
+    </div>
+
+    <script>
+        document.getElementById('joinBtn').addEventListener('click', async () => {
+            const code = document.getElementById('roomCode').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (!code) {
+                errorMsg.textContent = 'Please enter a code';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/main/' + code;
+                } else {
+                    errorMsg.textContent = data.error || 'Invalid code';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (err) {
+                errorMsg.textContent = 'Server error. Please try again later.';
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Check for error in URL parameters
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('error') === 'invalid_code') {
+                const errorMsg = document.getElementById('errorMsg');
+                errorMsg.textContent = 'The room code in the URL is invalid or has expired.';
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Trigger on enter key
+        document.getElementById('roomCode').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('joinBtn').click();
+            }
+        });
+
+        // QR Scanner Logic
+        let html5QrcodeScanner;
+
+        document.getElementById('startScanBtn').addEventListener('click', () => {
+            document.getElementById('startScanBtn').style.display = 'none';
+            document.getElementById('reader').style.display = 'block';
+
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader",
+                { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+                /* verbose= */ false);
+
+            html5QrcodeScanner.render((decodedText, decodedResult) => {
+                document.getElementById('roomCode').value = decodedText;
+                html5QrcodeScanner.clear();
+                document.getElementById('reader').style.display = 'none';
+                document.getElementById('startScanBtn').style.display = 'flex';
+
+                // Immediately submit or just give the user a moment
+                setTimeout(() => {
+                    document.getElementById('joinBtn').click();
+                }, 500);
+            }, (error) => {
+                // Ignore parse errors (too noisy)
+            });
+        });
+    </script>
+</body>
+
+</html>

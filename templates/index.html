@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </head>
 
 <body>
@@ -183,6 +184,10 @@
         </div>
     </dialog>
 
+    <script>
+        // Expose room code to globals for main.js delete requests
+        window.ROOM_CODE = "{{ code['code'] }}";
+    </script>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 

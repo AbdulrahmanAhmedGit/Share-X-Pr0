@@ -1,5 +1,3 @@
-// ==================== GLOBAL VARIABLES ====================
-let currentTheme = localStorage.getItem('theme') || 'light';
 let isUploading = false;
 let deviceInfo = null;
 let fileListPollingInterval = null; // Polling interval for automatic file list updates
@@ -14,7 +12,6 @@ const progressFill = document.getElementById('progressFill');
 const uploadFileName = document.getElementById('uploadFileName');
 const uploadPercent = document.getElementById('uploadPercent');
 const filesList = document.getElementById('filesList');
-const themeToggle = document.getElementById('themeToggle');
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 const qrCode = document.getElementById('qrCode');
 const networkAddress = document.getElementById('networkAddress');
@@ -34,7 +31,6 @@ const copyPreviewBtn = document.getElementById('copyPreviewBtn');
 
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
     initDragAndDrop();
     initFilePicker();
     loadFiles();
@@ -92,22 +88,6 @@ function initMobileMenu() {
     }
 }
 
-// ==================== THEME MANAGEMENT ====================
-function initTheme() {
-    document.documentElement.setAttribute('data-theme', currentTheme);
-
-    themeToggle.addEventListener('click', () => {
-        currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        localStorage.setItem('theme', currentTheme);
-
-        // Regenerate QR code if visible
-        const qrContainer = document.querySelector('.qr-container');
-        if (qrContainer && qrContainer.style.display !== 'none') {
-            generateQRCode();
-        }
-    });
-}
 
 // ==================== DRAG & DROP ====================
 // ==================== DRAG & DROP ====================
@@ -251,7 +231,7 @@ function uploadFile(file) {
     });
 
     // Send request
-    xhr.open('POST', '/upload');
+    xhr.open('POST', '/upload/' + window.ROOM_CODE);
     xhr.send(formData);
 
     // Reset file input
@@ -289,7 +269,7 @@ function stopFileListPolling() {
 // ==================== LOAD FILES ====================
 async function loadFiles() {
     try {
-        const response = await fetch('/files');
+        const response = await fetch('/files/' + window.ROOM_CODE);
 
         if (!response.ok) {
             throw new Error('Failed to fetch files');
@@ -428,7 +408,7 @@ async function deleteFile(fileId, fileName) {
     if (!confirmed) return;
 
     try {
-        const response = await fetch('/delete', {
+        const response = await fetch('/delete/' + window.ROOM_CODE, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
