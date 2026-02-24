@@ -214,7 +214,7 @@ def create_co():
     conn = get_db_connection()
     db = conn.cursor()
     
-    code = uuid.uuid4().hex
+    code = str(uuid.uuid4().hex)[::-8]
     db.execute("INSERT INTO codes (code) VALUES (?)", (code,))
     conn.commit()
     return render_template('create_code.html', code=code)
