@@ -1275,3 +1275,198 @@ button {
         padding: 1rem;
     }
 }
+
+/* ==================== DEVELOPER CREDIT TOAST ==================== */
+.dev-credit-footer {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1.4rem;
+    background: linear-gradient(135deg,
+            rgba(15, 23, 42, 0.95) 0%,
+            rgba(30, 41, 59, 0.95) 50%,
+            rgba(15, 23, 42, 0.95) 100%);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 50px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(99, 102, 241, 0.1);
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    pointer-events: auto;
+    /* appear after 1s, stay 5s, fade out over 0.8s */
+    animation: devToastLife 6.8s cubic-bezier(0.4, 0, 0.2, 1) 1s both;
+}
+
+[data-theme="light"] .dev-credit-footer {
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.97) 0%,
+            rgba(241, 245, 249, 0.97) 50%,
+            rgba(255, 255, 255, 0.97) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(99, 102, 241, 0.08);
+}
+
+/* Also apply to inline variant */
+.dev-credit-inline {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    margin-top: 0;
+}
+
+@keyframes devToastLife {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(40px) scale(0.9);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    85% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px) scale(0.95);
+        pointer-events: none;
+    }
+}
+
+.dev-credit-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: rgba(203, 213, 225, 0.9);
+    letter-spacing: 0.02em;
+}
+
+[data-theme="light"] .dev-credit-inner {
+    color: rgba(71, 85, 105, 0.9);
+}
+
+.dev-credit-inner .dev-heart {
+    display: inline-flex;
+    animation: devHeartPulse 1.5s ease-in-out infinite;
+    font-size: 0.85rem;
+    filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.4));
+}
+
+@keyframes devHeartPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.25);
+    }
+}
+
+.dev-credit-link {
+    position: relative;
+    color: transparent;
+    background: linear-gradient(135deg, #818cf8, #a78bfa, #c084fc);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.15rem 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dev-credit-link::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #818cf8, #a78bfa, #c084fc);
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
+}
+
+.dev-credit-link:hover::after {
+    width: 100%;
+}
+
+.dev-credit-link:hover {
+    filter: brightness(1.2);
+}
+
+.dev-credit-sparkle {
+    display: inline-flex;
+    font-size: 0.7rem;
+    animation: devSparkle 2s ease-in-out infinite;
+    opacity: 0.7;
+}
+
+@keyframes devSparkle {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: scale(0.9) rotate(0deg);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.15) rotate(15deg);
+    }
+}
+
+/* Responsive tweaks for dev credit and centered pages */
+@media (max-width: 480px) {
+    .dev-credit-inner {
+        font-size: 0.7rem;
+        gap: 0.3rem;
+    }
+
+    .dev-credit-footer {
+        padding: 0.5rem 1rem;
+        bottom: 1rem;
+    }
+
+    .container {
+        margin: 0 0.75rem;
+        padding: 2rem 1.5rem;
+        border-radius: 16px;
+    }
+
+    .container h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .floating-theme-toggle {
+        top: 1rem;
+        right: 1rem;
+        width: 38px;
+        height: 38px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 0 1rem;
+        padding: 2.5rem 2rem;
+    }
+}

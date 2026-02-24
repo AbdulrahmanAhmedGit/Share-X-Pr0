@@ -1,10 +1,16 @@
-# Share-X-Pr0 - Premium Local File Sharing (v2.0)
+# Share-X-Pr0 - Premium Local File Sharing (v2.1)
 
 A stunning, modern, and high-performance web application for secure local network file sharing. Built with **Flask** and **Vanilla JS**, featuring a premium glassmorphism design, real-time updates, instant mobile connectivity, and now with **organized room-based sharing**.
 
 ![Share-X-Pr0 Banner](https://raw.githubusercontent.com/AbdulrahmanAhmedGit/Share-X-Pr0/refs/heads/main/static/img/Gemini_Generated_Image_spupzjspupzjspup.png)
 
-## 🎉 What's New in Version 2.0
+## 🎉 What's New in Version 2.1
+
+*   **👨‍💻 Developer Credit Toast**: A sleek, animated pop-up toast that appears on every page — featuring gradient text, a pulsing heart, and sparkle animations. Links to the developer's portfolio. Appears briefly and then fades away gracefully.
+*   **🚫 Custom Error Pages**: Beautiful, themed 404 ("Lost in Space") and 500 ("Something Went Wrong") error pages with smooth animations, matching the app's design system.
+*   **📱 Enhanced Responsiveness**: Improved mobile layout across all centered pages (Home, Create Room, Join Room) with proper margins, padding, and scaled UI elements on small screens.
+
+## 🔄 Version 2.0 Highlights
 
 *   **🔑 Secure Room Codes**: Files are no longer just dumped in a single global space. Create secure, isolated rooms with unique 4-digit codes to share files privately.
 *   **💾 SQLite Migration**: Upgraded from simple JSON metadata storage to a robust SQLite3 database (`share_x.db`) for improved performance, thread safety, and multi-user concurrency.
@@ -67,7 +73,9 @@ Share-X-Pr0/
 │   ├── home.html        # Landing page
 │   ├── create_code.html # Room creation page
 │   ├── enter_code.html  # Join room page
-│   └── index.html       # Main application interface for a room
+│   ├── index.html       # Main application interface for a room
+│   ├── 404.html         # Custom 404 error page
+│   └── 500.html         # Custom 500 error page
 └── static/
     ├── styles.css      # Premium styling, variables & themes
     ├── main.js         # Frontend logic (Drag&Drop, Polling, UI)
@@ -88,4 +96,4 @@ Contributions are welcome! Feel free to submit a Pull Request or open an issue.
 
 ---
 
-**Share-X-Pr0** © 2026. Simple. Fast. Secure.
+**Share-X-Pr0** © 2026 — Developed by [Abdulrahman AH](https://abdulrahmanp0rtfolio.pythonanywhere.com). Simple. Fast. Secure.
