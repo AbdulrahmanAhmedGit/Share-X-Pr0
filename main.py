@@ -25,7 +25,10 @@ METADATA_FILE = "metadata.json"
 
 if os.path.exists(METADATA_FILE):
     with open(METADATA_FILE, "r") as f:
-        metadata = json.load(f)
+        try:
+            metadata = json.load(f)
+        except (json.JSONDecodeError, ValueError):
+            metadata = {}
 else:
     metadata = {}
 
