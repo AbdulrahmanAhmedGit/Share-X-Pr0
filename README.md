@@ -1,10 +1,15 @@
-# Share-X-Pr0 - Premium Local File Sharing (v2.1)
+# Share-X-Pr0 - Premium Local File Sharing (v2.2)
 
 A stunning, modern, and high-performance web application for secure local network file sharing. Built with **Flask** and **Vanilla JS**, featuring a premium glassmorphism design, real-time updates, instant mobile connectivity, and now with **organized room-based sharing**.
 
 ![Share-X-Pr0 Banner](https://raw.githubusercontent.com/AbdulrahmanAhmedGit/Share-X-Pr0/refs/heads/main/static/img/Gemini_Generated_Image_spupzjspupzjspup.png)
 
-## 🎉 What's New in Version 2.1
+## 🎉 What's New in Version 2.2
+
+*   **📷 Native & Fallback QR Scanning**: Added a powerful in-browser QR code scanner to instantly join rooms. Now includes a smart fallback for non-HTTPS (Not Secure) local network connections, allowing users to take a photo of the QR code which is instantly resized and scanned directly on the device!
+*   **🔗 Native QR Code Sharing**: Added a native "Share QR Code" button when creating a room. Integrates with the Web Share API to easily pass the room's QR code image into WhatsApp, Telegram, Email, and Messages directly from your phone.
+
+## 🔄 Version 2.1 Highlights
 
 *   **👨‍💻 Developer Credit Toast**: A sleek, animated pop-up toast that appears on every page — featuring gradient text, a pulsing heart, and sparkle animations. Links to the developer's portfolio. Appears briefly and then fades away gracefully.
 *   **🚫 Custom Error Pages**: Beautiful, themed 404 ("Lost in Space") and 500 ("Something Went Wrong") error pages with smooth animations, matching the app's design system.

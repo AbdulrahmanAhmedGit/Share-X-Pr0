@@ -198,6 +198,18 @@
             Scan QR Code
         </button>
 
+        <div id="fallbackContainer" style="display: none; width: 100%;">
+            <label for="fallback-camera" class="btn btn-scan" style="cursor: pointer; margin-bottom: 1.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+                Take Photo of QR Code
+            </label>
+            <input type="file" accept="image/*" capture="environment" style="display: none;" id="fallback-camera">
+        </div>
+
         <div id="reader"></div>
 
         <div class="form-group">
@@ -272,29 +284,95 @@
         // QR Scanner Logic
         let html5QrcodeScanner;
 
-        document.getElementById('startScanBtn').addEventListener('click', () => {
-            document.getElementById('startScanBtn').style.display = 'none';
-            document.getElementById('reader').style.display = 'block';
+        // Check for Secure Context
+        if (window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            document.getElementById('startScanBtn').addEventListener('click', () => {
+                document.getElementById('startScanBtn').style.display = 'none';
+                document.getElementById('reader').style.display = 'block';
 
-            html5QrcodeScanner = new Html5QrcodeScanner(
-                "reader",
-                { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
-                /* verbose= */ false);
+                html5QrcodeScanner = new Html5QrcodeScanner(
+                    "reader",
+                    { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+                    /* verbose= */ false);
 
-            html5QrcodeScanner.render((decodedText, decodedResult) => {
-                document.getElementById('roomCode').value = decodedText;
-                html5QrcodeScanner.clear();
-                document.getElementById('reader').style.display = 'none';
-                document.getElementById('startScanBtn').style.display = 'flex';
+                html5QrcodeScanner.render((decodedText, decodedResult) => {
+                    document.getElementById('roomCode').value = decodedText;
+                    html5QrcodeScanner.clear();
+                    document.getElementById('reader').style.display = 'none';
+                    document.getElementById('startScanBtn').style.display = 'flex';
 
-                // Immediately submit or just give the user a moment
-                setTimeout(() => {
-                    document.getElementById('joinBtn').click();
-                }, 500);
-            }, (error) => {
-                // Ignore parse errors (too noisy)
+                    // Immediately submit or just give the user a moment
+                    setTimeout(() => {
+                        document.getElementById('joinBtn').click();
+                    }, 500);
+                }, (error) => {
+                    // Ignore parse errors (too noisy)
+                });
             });
-        });
+        } else {
+            // Smart Fallback (If Not Secure)
+            document.getElementById('startScanBtn').style.display = 'none';
+            document.getElementById('fallbackContainer').style.display = 'block';
+
+            document.getElementById('fallback-camera').addEventListener('change', (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    const errorMsg = document.getElementById('errorMsg');
+                    errorMsg.textContent = 'Processing and scanning image...';
+                    errorMsg.style.display = 'block';
+                    errorMsg.style.color = 'var(--text-secondary)';
+
+                    // Resize image before scanning to help html5-qrcode
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width;
+                        let h = img.height;
+                        const maxDim = 800; // Optimal max dimension for scanning
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+                            else { w = Math.round(w * maxDim / h); h = maxDim; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+
+                        canvas.toBlob(blob => {
+                            const resizedFile = new File([blob], "qr_resized.jpg", { type: "image/jpeg" });
+                            const html5QrCode = new Html5Qrcode("reader");
+
+                            html5QrCode.scanFile(resizedFile, false)
+                                .then(decodedText => {
+                                    document.getElementById('roomCode').value = decodedText;
+                                    errorMsg.style.display = 'none';
+                                    errorMsg.style.color = 'var(--status-error, #ef4444)'; // Reset color
+
+                                    // Immediately submit
+                                    setTimeout(() => {
+                                        document.getElementById('joinBtn').click();
+                                    }, 500);
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                    errorMsg.textContent = 'Could not find a QR code in the image. Please try again.';
+                                    errorMsg.style.color = 'var(--status-error, #ef4444)';
+                                })
+                                .finally(() => {
+                                    document.getElementById('fallback-camera').value = '';
+                                    URL.revokeObjectURL(img.src);
+                                });
+                        }, 'image/jpeg', 0.85);
+                    };
+                    img.onerror = () => {
+                        errorMsg.textContent = 'Error loading image for scan.';
+                        errorMsg.style.color = 'var(--status-error, #ef4444)';
+                        document.getElementById('fallback-camera').value = '';
+                    };
+                    img.src = URL.createObjectURL(file);
+                }
+            });
+        }
     </script>
 </body>
 

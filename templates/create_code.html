@@ -163,6 +163,19 @@
             <span class="sub-text">Click to copy code before entering!</span>
         </div>
 
+        <button id="shareQrBtn" class="btn"
+            style="background: var(--bg-surface-hover); color: var(--text-primary); border: 1px solid var(--border-color); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            Share QR Code
+        </button>
+
         <a href="/main/{{ code }}" class="btn btn-primary">Enter Room</a>
         <a href="/" class="btn btn-ghost">Back to Home</a>
     </div>
@@ -196,6 +209,69 @@
             }).catch(err => {
                 console.error('Failed to copy text: ', err);
             });
+        });
+
+        document.getElementById('shareQrBtn').addEventListener('click', async () => {
+            const qrImgUrl = document.getElementById('qrCodeImg').src;
+            const roomCode = document.getElementById('roomCode').innerText;
+            const originalText = document.getElementById('shareQrBtn').innerText;
+            try {
+                document.getElementById('shareQrBtn').innerText = 'Preparing...';
+
+                // Fetch the image to share it natively
+                const response = await fetch(qrImgUrl);
+                const blob = await response.blob();
+                const file = new File([blob], `share_x_room_${roomCode}_qr.png`, { type: blob.type });
+
+                document.getElementById('shareQrBtn').innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    Share
+                `; // Give visual feedback
+
+                const shareDataWithFile = {
+                    title: 'Join my Share-X-Pr0 Room',
+                    text: `Scan this QR code to join my local sharing room, or use code: ${roomCode}`,
+                    files: [file]
+                };
+
+                const shareDataTextOnly = {
+                    title: 'Join my Share-X-Pr0 Room',
+                    text: `Join my local sharing room using code: ${roomCode}`
+                };
+
+                if (navigator.canShare && navigator.canShare(shareDataWithFile)) {
+                    await navigator.share(shareDataWithFile);
+                } else if (navigator.share) {
+                    await navigator.share(shareDataTextOnly);
+                } else {
+                    alert('Sharing is not supported natively on this browser.');
+                }
+            } catch (err) {
+                console.error('Error sharing:', err);
+                if (err.name !== 'AbortError') {
+                    alert('An error occurred while sharing.');
+                }
+            } finally {
+                // Restore button state
+                document.getElementById('shareQrBtn').innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    Share QR Code
+                `;
+            }
         });
     </script>
 </body>
