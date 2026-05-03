@@ -4,13 +4,10 @@ from werkzeug.utils import secure_filename
 from flask_wtf import CSRFProtect
 import psycopg2, uuid, dotenv, os
 from datetime import timedelta, datetime
-import re
-from psycopg2.extras import RealDictCursor
-import requests
-import csv
-import io
 import json
 import sqlite3
+import threading
+import time
 
 UPLOAD_FOLDER= 'upload'
 app = Flask(__name__)
@@ -185,6 +182,113 @@ def delete(code):
         json.dump(metadata, f)
     
     return jsonify({"success": True})
+
+
+@app.route("/heartbeat/<code>", methods=["POST"])
+def heartbeat(code):
+    data = request.get_json() or {}
+    # Use client-side ID (per tab) to allow counting multiple tabs from same browser
+    session_id = data.get('member_id') or session.get('_id', 'anonymous')
+    
+    conn = get_db_connection()
+    db = conn.cursor()
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    db.execute("INSERT OR REPLACE INTO members (code, session_id, last_seen) VALUES (?, ?, ?)", 
+               (code, session_id, now))
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True})
+
+@app.route("/members/<code>", methods=["GET"])
+def get_members(code):
+    conn = get_db_connection()
+    db = conn.cursor()
+    # Active if seen in the last 20 seconds
+    threshold = (datetime.now() - timedelta(seconds=20)).strftime('%Y-%m-%d %H:%M:%S')
+    db.execute("SELECT COUNT(DISTINCT session_id) FROM members WHERE code = ? AND last_seen > ?", (code, threshold))
+    count = db.fetchone()[0]
+    conn.close()
+    return jsonify({"count": count})
+
+@app.route("/end-session/<code>", methods=["POST"])
+def end_session(code):
+    conn = get_db_connection()
+    db = conn.cursor()
+    db.execute("SELECT * FROM codes WHERE code = ?", (code,))
+    if not db.fetchone():
+        return jsonify({"success": False, "error": "Invalid session"}), 404
+        
+    delete_session_data(code, db)
+    conn.commit()
+    conn.close()
+    session.pop('verified_code', None)
+    return jsonify({"success": True})
+
+def delete_session_data(code, db_cursor):
+    # Delete files from disk
+    ids_to_remove = []
+    for file_id, info in list(metadata.items()):
+        if info.get("usr_code") == code:
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"], file_id)
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except:
+                    pass
+            ids_to_remove.append(file_id)
+    
+    # Update metadata
+    for fid in ids_to_remove:
+        metadata.pop(fid, None)
+    
+    with open(METADATA_FILE, "w") as f:
+        json.dump(metadata, f)
+        
+    # Delete from DB
+    db_cursor.execute("DELETE FROM codes WHERE code = ?", (code,))
+    db_cursor.execute("DELETE FROM members WHERE code = ?", (code,))
+
+def cleanup_worker():
+    while True:
+        try:
+            with sqlite3.connect("share_x.db") as conn:
+                db = conn.cursor()
+                now = datetime.now()
+                
+                # 1. Prune stale members
+                stale_threshold = (now - timedelta(seconds=30)).strftime('%Y-%m-%d %H:%M:%S')
+                db.execute("DELETE FROM members WHERE last_seen < ?", (stale_threshold,))
+                
+                # 2. Check sessions
+                db.execute("SELECT code, empty_since FROM codes")
+                codes = db.fetchall()
+                
+                for code_row in codes:
+                    code = code_row[0]
+                    empty_since_str = code_row[1]
+                    
+                    db.execute("SELECT COUNT(*) FROM members WHERE code = ?", (code,))
+                    member_count = db.fetchone()[0]
+                    
+                    if member_count == 0:
+                        if empty_since_str is None:
+                            db.execute("UPDATE codes SET empty_since = ? WHERE code = ?", 
+                                     (now.strftime('%Y-%m-%d %H:%M:%S'), code))
+                        else:
+                            empty_since = datetime.strptime(empty_since_str, '%Y-%m-%d %H:%M:%S')
+                            if (now - empty_since).total_seconds() > 120:
+                                delete_session_data(code, db)
+                    else:
+                        if empty_since_str is not None:
+                            db.execute("UPDATE codes SET empty_since = NULL WHERE code = ?", (code,))
+                conn.commit()
+        except Exception as e:
+            print(f"Cleanup Error: {e}")
+        time.sleep(30)
+
+# Start background worker
+threading.Thread(target=cleanup_worker, daemon=True).start()
 
 
 @app.route("/health", methods=["GET"])

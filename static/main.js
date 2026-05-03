@@ -1,7 +1,13 @@
 let isUploading = false;
 let deviceInfo = null;
 let fileListPollingInterval = null; // Polling interval for automatic file list updates
+let heartbeatInterval = null;
+let memberCountInterval = null;
 const displayedFiles = new Map(); // Track currently displayed files by ID
+if (!sessionStorage.getItem('member_id')) {
+    sessionStorage.setItem('member_id', Math.random().toString(36).substring(2, 15));
+}
+const member_id = sessionStorage.getItem('member_id');
 
 // ==================== DOM ELEMENTS ====================
 const dropZone = document.getElementById('dropZone');
@@ -28,6 +34,8 @@ const previewContent = document.getElementById('previewContent');
 const closePreviewBtn = document.getElementById('closePreview');
 const downloadPreviewBtn = document.getElementById('downloadPreviewBtn');
 const copyPreviewBtn = document.getElementById('copyPreviewBtn');
+const memberCount = document.getElementById('memberCount');
+const endSessionBtn = document.getElementById('endSessionBtn');
 
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -39,6 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initMobileMenu();
     initPreviewModal();
     startFileListPolling(); // Start automatic file list updates
+    startHeartbeat();
+    initEndSession();
 });
 
 // ==================== MOBILE MENU ====================
@@ -712,6 +722,69 @@ function showToast(message, type = 'info') {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+// ==================== HEARTBEAT & MEMBERS ====================
+function startHeartbeat() {
+    sendHeartbeat();
+    heartbeatInterval = setInterval(sendHeartbeat, 5000);
+
+    updateMemberCount();
+    memberCountInterval = setInterval(updateMemberCount, 5000);
+}
+
+async function sendHeartbeat() {
+    try {
+        await fetch('/heartbeat/' + window.ROOM_CODE, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ member_id: member_id })
+        });
+    } catch (e) {
+        // Fail silently
+    }
+}
+
+async function updateMemberCount() {
+    try {
+        const res = await fetch('/members/' + window.ROOM_CODE);
+        if (res.status === 404) {
+            // Session likely ended
+            window.location.href = '/join?error=session_ended';
+            return;
+        }
+        const data = await res.json();
+        if (memberCount) {
+            memberCount.textContent = `${data.count} Active Member${data.count > 1 ? 's' : ''}`;
+        }
+    } catch (e) {
+        // Fail silently
+    }
+}
+
+// ==================== END SESSION ====================
+function initEndSession() {
+    if (endSessionBtn) {
+        endSessionBtn.addEventListener('click', async () => {
+            const confirmed = await showDeleteConfirmation("THIS ENTIRE SESSION");
+            if (confirmed) {
+                try {
+                    const response = await fetch('/end-session/' + window.ROOM_CODE, {
+                        method: 'POST'
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '/';
+                    } else {
+                        showToast('Failed to end session', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error ending session:', error);
+                    showToast('Error ending session', 'error');
+                }
+            }
+        });
+    }
 }
 
 // Make functions available globally
